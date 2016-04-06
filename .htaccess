@@ -1,0 +1,6 @@
+
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^vermiip.com.mx$
+RewriteRule ^/?$ "http\:\/\/www\.vermiip\.com\.mx\/" [R=301,L]
+
+RewriteRule ^buscar_ip/(.*)$ $1
