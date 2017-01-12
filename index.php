@@ -52,6 +52,12 @@
 					<div class="content">
 						<table class="alt" id="tablaInfo">
 						</table>
+						<!-- Adapatble horizontal -->
+						<ins class="adsbygoogle"
+						     style="display:block"
+						     data-ad-client="ca-pub-3122338729474694"
+						     data-ad-slot="4544777236"
+						     data-ad-format="auto"></ins>
 					</div>
 				</header>
 				<!--ul class="icons major">
@@ -83,6 +89,11 @@
 						<div class="content">
 							  <h3>Dirección IP</h3>
 							  <p class="lead">Una dirección IP es un identificador unico para un equipo dentro de una red.</p>
+							<ins class="adsbygoogle"
+						     style="display:block"
+						     data-ad-client="ca-pub-3122338729474694"
+						     data-ad-slot="4544777236"
+						     data-ad-format="auto"></ins>
 						</div>
 					</section>
 				</div>
@@ -94,6 +105,11 @@
 					<h2>Buscas privacidad en Internet</h2>
 					<p>Recuerda que tu dirección IP puede ser rastreada, te recomendamos usar alguna herramienta para proteger tu ubicación.</p>
 					<p>Tor Project es la herramienta indicada a la hora de proteger tu privacidad y anonimato a la hora de navegar en internet.</p>
+					<ins class="adsbygoogle"
+						     style="display:block"
+						     data-ad-client="ca-pub-3122338729474694"
+						     data-ad-slot="4544777236"
+						     data-ad-format="auto"></ins>
 				</header>
 				<ul class="actions">
 					<li><a href="https://www.torproject.org/download/download-easy.html.en" rel="nofollow" target="_blank" class="button special icon fa-download">Descargar</a></li>
@@ -279,6 +295,12 @@
 			  ga('create', 'UA-57318924-4', 'auto');
 			  ga('send', 'pageview');
 			
-		</script> 
+		</script>
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+			(adsbygoogle = window.adsbygoogle || []).push({});
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
 	</body>
 </html>
