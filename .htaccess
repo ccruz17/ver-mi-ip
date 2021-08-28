@@ -1,6 +1,8 @@
+RewriteEngine On
+RewriteCond %{HTTP_HOST} !^www\.
+RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L]
 
-RewriteEngine on
-RewriteCond %{HTTP_HOST} ^vermiip.com.mx$
-RewriteRule ^/?$ "http\:\/\/www\.vermiip\.com\.mx\/" [R=301,L]
+RewriteCond %{HTTPS} off
+RewriteRule (.*) https://%{SERVER_NAME}/$1 [R,L]
 
 RewriteRule ^buscar_ip/(.*)$ $1
