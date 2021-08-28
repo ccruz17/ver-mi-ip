@@ -1,3 +1,59 @@
+<?php
+
+function validate_ip($ip) {
+	if (filter_var($ip, FILTER_VALIDATE_IP,
+						FILTER_FLAG_IPV4 |
+						FILTER_FLAG_IPV6 |
+						FILTER_FLAG_NO_PRIV_RANGE |
+						FILTER_FLAG_NO_RES_RANGE) === false)
+		return false;
+	return true;
+}
+
+function get_ip_address() {
+	// check for shared internet/ISP IP
+	if (!empty($_SERVER['HTTP_CLIENT_IP']) && validate_ip($_SERVER['HTTP_CLIENT_IP'])) {
+		return $_SERVER['HTTP_CLIENT_IP'];
+	}
+
+	// check for IPs passing through proxies
+	if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+		// check if multiple ips exist in var
+		if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',') !== false) {
+			$iplist = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+			foreach ($iplist as $ip) {
+				if (validate_ip($ip))
+					return $ip;
+			}
+		} else {
+			if (validate_ip($_SERVER['HTTP_X_FORWARDED_FOR']))
+				return $_SERVER['HTTP_X_FORWARDED_FOR'];
+		}
+	}
+	if (!empty($_SERVER['HTTP_X_FORWARDED']) && validate_ip($_SERVER['HTTP_X_FORWARDED']))
+		return $_SERVER['HTTP_X_FORWARDED'];
+	if (!empty($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']) && validate_ip($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']))
+		return $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
+	if (!empty($_SERVER['HTTP_FORWARDED_FOR']) && validate_ip($_SERVER['HTTP_FORWARDED_FOR']))
+		return $_SERVER['HTTP_FORWARDED_FOR'];
+	if (!empty($_SERVER['HTTP_FORWARDED']) && validate_ip($_SERVER['HTTP_FORWARDED']))
+		return $_SERVER['HTTP_FORWARDED'];
+
+	// return unreliable ip since all else failed
+	return $_SERVER['REMOTE_ADDR'];
+}
+$ip = isset($_GET['ip']) ? $_GET['ip'] : get_ip_address();
+
+$url = file_get_contents('http://ip-api.com/json/' + $ip);
+$curlSession = curl_init();
+curl_setopt($curlSession, CURLOPT_URL, $url);
+curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
+curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
+$query = @unserialize(file_get_contents('http://ip-api.com/php/'.$ip));
+curl_close($curlSession);
+$json = json_encode($query);
+
+?>
 <!DOCTYPE HTML>
 <html>
 	<head>
@@ -35,7 +91,7 @@
 						</li>
 					</ul>
 					<ul class="actions">
-						<li class="container_errors"></li>	
+						<li class="container_errors"></li>
 					</ul>
 				</div>
 				<div class="image phone">
@@ -60,11 +116,6 @@
 						     data-ad-format="auto"></ins>
 					</div>
 				</header>
-				<!--ul class="icons major">
-					<li><span class="icon fa-camera-retro"><span class="label">Shoot</span></span></li>
-					<li><span class="icon fa-refresh"><span class="label">Process</span></span></li>
-					<li><span class="icon fa-cloud"><span class="label">Upload</span></span></li>
-				</ul-->
 			</section>
 
 		<!-- Two -->
@@ -123,7 +174,7 @@
 					<li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
 					<li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
 				</ul>
-				<p class="copyright">&copy; www.vermiip.com.mx Creditos: <a href="http://wwww.ccruz.ga">CCRUZ</a></p>
+				<p class="copyright">&copy; www.vermiip.com.mx Creditos: <a href="https://www.ccruz.me">CCRUZ</a></p>
 			</footer>
 
 		<!-- Scripts -->
@@ -139,9 +190,9 @@
 		<script type="text/javascript">
 			jQuery.validator.addMethod('validIP', function(value) {
 			    var split = value.split('.');
-			    if (split.length != 4) 
+			    if (split.length != 4)
 			        return false;
-			            
+
 			    for (var i=0; i<split.length; i++) {
 			        var s = split[i];
 			        if (s.length==0 || isNaN(s) || s<0 || s>255)
@@ -149,75 +200,70 @@
 			    }
 			    return true;
 			}, 'Ingresa una IP válida');
-			
+
 		  	jQuery(function($) {
 				$(document).ready( function() {
-				
+
 					jQuery(".form_search").validate({
 						errorLabelContainer: $(".container_errors"),
 						rules: {
 							ip: { validIP: true }
-						}	          
+						}
 					});
-						
-					var ip = "<?php echo isset($_GET['ip']) ? $_GET['ip'] : '' ?>"
-					$.getJSON("http://ip-api.com/json/" + ip,
-						function(info) {
-							console.log(info);
-							if(info != '') {
-								if(info.hasOwnProperty('status') && info.status == 'success') {
-									$('.mi_ip').html(info.query);
-									var html = '';
-									if(info.hasOwnProperty('country') && info.country != ''){
-										html += '<tr><td>País</td><td>' + info.country;
-										if(info.hasOwnProperty('countryCode') && info.countryCode != ''){
-											html += ' (' + info.countryCode + ')';
-										}
-										html += '</td></tr>';
-									}
-									var ciudad = '';
-									if(info.hasOwnProperty('regionName') && info.regionName != ''){
-										html += '<tr><td>Region</td><td>' + info.regionName;
-										if(info.hasOwnProperty('region') && info.region != ''){
-											html += ' (' + info.region + ')';
-										}
-										html += '</td></tr>';
-									}
-									if(info.hasOwnProperty('city') && info.city != ''){
-										html += '<tr><td>Ciudad</td><td>' + info.city + '</td></tr>';
-									}
-									
-									if(info.hasOwnProperty('zip') && info.zip != ''){
-										html += '<tr><td>Código postal</td><td>' + info.zip + '</td></tr>';
-									}
-									if(info.hasOwnProperty('timezone') && info.timezone != ''){
-										html += '<tr><td>Zona horaria</td><td>' + info.timezone + '</td></tr>';
-									}
-									if(info.hasOwnProperty('lat') && info.lat != '' && info.hasOwnProperty('lon') && info.lon != ''){
-										html += '<tr><td>Ubicación</td><td>' + info.lat + ', ' + info.lon;'</td></tr>';
-										initialize(info.lat, info.lon);
-									}else {
-										$('#idUbicacion').hide();
-									}
-									
-									if(info.hasOwnProperty('isp') && info.isp != ''){
-										html += '<tr><td>ISP</td><td>' + info.isp + '</td></tr>';
-									}
-									if(info.hasOwnProperty('org') && info.org != ''){
-										html += '<tr><td>Organización</td><td>' + info.org + '</td></tr>';
-									}
-									
-									$('#tablaInfo').html(html);
-								}else {
-									intentoNuevo();
+
+					var info = <?php echo $json; ?>;
+					if(info != '') {
+						if(info.hasOwnProperty('status') && info.status == 'success') {
+							$('.mi_ip').html(info.query);
+							var html = '';
+							if(info.hasOwnProperty('country') && info.country != ''){
+								html += '<tr><td>País</td><td>' + info.country;
+								if(info.hasOwnProperty('countryCode') && info.countryCode != ''){
+									html += ' (' + info.countryCode + ')';
 								}
-							}else {
-								intentoNuevo();
+								html += '</td></tr>';
 							}
-							
-						});	
+							var ciudad = '';
+							if(info.hasOwnProperty('regionName') && info.regionName != ''){
+								html += '<tr><td>Region</td><td>' + info.regionName;
+								if(info.hasOwnProperty('region') && info.region != ''){
+									html += ' (' + info.region + ')';
+								}
+								html += '</td></tr>';
+							}
+							if(info.hasOwnProperty('city') && info.city != ''){
+								html += '<tr><td>Ciudad</td><td>' + info.city + '</td></tr>';
+							}
+
+							if(info.hasOwnProperty('zip') && info.zip != ''){
+								html += '<tr><td>Código postal</td><td>' + info.zip + '</td></tr>';
+							}
+							if(info.hasOwnProperty('timezone') && info.timezone != ''){
+								html += '<tr><td>Zona horaria</td><td>' + info.timezone + '</td></tr>';
+							}
+							if(info.hasOwnProperty('lat') && info.lat != '' && info.hasOwnProperty('lon') && info.lon != ''){
+								html += '<tr><td>Ubicación</td><td>' + info.lat + ', ' + info.lon;'</td></tr>';
+								initialize(info.lat, info.lon);
+							}else {
+								$('#idUbicacion').hide();
+							}
+
+							if(info.hasOwnProperty('isp') && info.isp != ''){
+								html += '<tr><td>ISP</td><td>' + info.isp + '</td></tr>';
+							}
+							if(info.hasOwnProperty('org') && info.org != ''){
+								html += '<tr><td>Organización</td><td>' + info.org + '</td></tr>';
+							}
+
+							$('#tablaInfo').html(html);
+						} else {
+							intentoNuevo();
+						}
+					} else {
+						intentoNuevo();
+					}
 				});
-				
+
 				function intentoNuevo() {
 					$.getJSON("https://freegeoip.net/json/",
 						function(info) {
@@ -280,27 +326,61 @@
 			      title: 'Estas aquí!'
 			  });
 			}
-				
+
 			var clipboard = new Clipboard('.copy');
 			clipboard.on('success', function(e) {
 				$(".copy").notify("Tu IP se ha copiado al portapapeles", "info");
 			});
   		</script>
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-57318924-4"></script>
 		<script>
-			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-			
-			  ga('create', 'UA-57318924-4', 'auto');
-			  ga('send', 'pageview');
-			
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'UA-57318924-4');
 		</script>
+
+		<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
+		<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
+		<script>
+		window.addEventListener("load", function(){
+		window.cookieconsent.initialise({
+		  "palette": {
+		    "popup": {
+		      "background": "#000"
+		    },
+		    "button": {
+		      "background": "#f1d600"
+		    }
+		  },
+		  "type": "opt-out",
+		  "content": {
+		    "message": "Este sitio web usa Cookies para mejorar y optimizar la experiencia del usuario",
+		    "dismiss": "Aceptar",
+		    "deny": "Cancelar",
+		    "link": "Leer más",
+			"allow": "Permitir"
+		  }
+		})});
+		</script>
+
 		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 		<script>
-			(adsbygoogle = window.adsbygoogle || []).push({});
-			(adsbygoogle = window.adsbygoogle || []).push({});
-			(adsbygoogle = window.adsbygoogle || []).push({});
+		     (adsbygoogle = window.adsbygoogle || []).push({
+		          google_ad_client: "ca-pub-3122338729474694",
+		          enable_page_level_ads: true
+		     });
+		     (adsbygoogle = window.adsbygoogle || []).push({
+                          google_ad_client: "ca-pub-3122338729474694",
+
+                     });
+		     (adsbygoogle = window.adsbygoogle || []).push({
+                          google_ad_client: "ca-pub-3122338729474694",
+
+                     });
 		</script>
 	</body>
 </html>
