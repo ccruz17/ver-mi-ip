@@ -44,7 +44,7 @@ function get_ip_address() {
 }
 $ip = isset($_GET['ip']) ? $_GET['ip'] : get_ip_address();
 
-$url = file_get_contents('http://ip-api.com/json/' + $ip);
+$url = file_get_contents('http://ip-api.com/json/'.$ip);
 $curlSession = curl_init();
 curl_setopt($curlSession, CURLOPT_URL, $url);
 curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
